@@ -1,0 +1,28 @@
+/* Tailwind v4 core */
+@import "tailwindcss";
+
+/* First‑party plugins (v4 CSS-first) */
+@plugin "@tailwindcss/typography";
+
+/* Optional design tokens via Tailwind v4 @theme */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  --color-brand: #2563eb;        /* generates text-brand, bg-brand, border-brand, etc. */
+  --radius-card: 0.75rem;
+}
+
+:root { color-scheme: light dark; }
+
+/* App chrome */
+.site-header, .site-footer { @apply px-4 py-3 border-b border-gray-200; }
+.site-footer { @apply border-0 border-t; }
+main { @apply p-4; }
+
+/* Typography container for Builder-rendered HTML */
+.builder-prose { @apply prose prose-slate max-w-none dark:prose-invert; }
+
+/* Example hero (used by optional code component) */
+.hero { @apply rounded-[var(--radius-card)] bg-gray-50 p-8 shadow-sm; }
+.hero h1 { @apply m-0 mb-2 text-3xl font-bold text-gray-900; }
+.hero p  { @apply text-gray-600; }
+
