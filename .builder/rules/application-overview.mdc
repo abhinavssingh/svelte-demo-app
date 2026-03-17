@@ -1,0 +1,65 @@
+# Application Overview
+
+## Project Context
+
+This is a production-ready SvelteKit 2 application fully integrated with Builder.io Publish for visual site building. The application is designed to scale from small marketing sites to complex multi-language platforms.
+
+## Technology Stack
+
+- **Frontend Framework**: SvelteKit 2.53.2 with Svelte 5.53.5
+- **Language**: TypeScript 5.9.3 (strict mode)
+- **Styling**: TailwindCSS 4.2.1 with PostCSS
+- **Builder Integration**: @builder.io/sdk-svelte 5.2.0
+- **Build & Dev**: Vite 7.3.1
+- **Code Quality**: ESLint 9 + Prettier
+
+## Key Directories
+
+- **`src/lib/builders/`** - Builder.io SDK integration and custom components
+- **`src/lib/components/`** - Reusable UI components (layout, hero, features)
+- **`src/lib/api/`** - Typed API client with caching
+- **`src/lib/i18n/`** - Internationalization store (10 languages)
+- **`src/routes/`** - SvelteKit pages and API endpoints
+- **`.builder/rules/`** - AI instruction rules for code generation
+
+## Core Principles
+
+1. **Type Safety First** - All code is strictly typed with TypeScript
+2. **Component-Driven** - Everything is a composable component with Svelte 5 runes
+3. **Builder Ready** - All components can be visually edited in Builder.io
+4. **Direct Integration** - Custom components passed to Content component (no devtools needed)
+5. **Modular Architecture** - Easy to extend and maintain
+6. **Internationalization** - Multi-language support from day one
+7. **Production Focus** - Optimized for performance and scalability
+
+## Development Workflow
+
+1. Create components in `src/lib/components/` using Svelte 5 runes ($props)
+2. Register components in `src/lib/builders/customComponents.ts`
+3. Components automatically available in Builder.io visual editor
+4. Edit and preview pages at https://builder.io
+5. Published content renders automatically with your custom components
+
+## Environment Variables Required
+
+- `PUBLIC_BUILDER_API_KEY` - Builder.io API key
+- `VITE_BUILDER_SPACE_ID` - Builder.io space ID
+- Optional: `VITE_BUILDER_ENV_ID` - Environment ID
+
+## Important Files
+
+- **`src/lib/index.ts`** - Central export point for all lib modules
+- **`src/lib/builders/customComponents.ts`** - Where all components are registered for Builder.io
+- **`src/routes/[...path]/+page.svelte`** - Dynamic page rendering with Builder content
+- **`src/lib/i18n/store.ts`** - Language/translation configuration
+- **`src/hooks.server.ts`** - App initialization
+- **`AGENTS.md`** - This documentation for AI agents
+
+## Code Style Guidelines
+
+- Use SvelteKit `$lib` alias for all imports
+- Always define TypeScript types for props and functions
+- Use Tailwind classes, avoid inline CSS
+- Follow file naming: components are PascalCase, utilities are camelCase
+- Keep component files focused and under 300 lines
+- Comment complex logic and non-obvious implementations

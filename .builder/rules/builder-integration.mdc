@@ -1,0 +1,247 @@
+# Builder.io Integration Guidelines
+
+## Overview
+
+This application is fully integrated with Builder.io Publish using the `@builder.io/sdk-svelte` SDK. Custom Svelte components are passed directly to the Content component via the `customComponents` prop.
+
+## Initialization Flow
+
+The app initializes Builder.io in this sequence:
+
+1. **App Startup**: `src/hooks.server.ts` calls `builderIntegration.initialize()`
+2. **SDK Setup**: `src/lib/builders/integration.ts` configures the SDK with API key
+3. **Custom Components**: `src/lib/builders/customComponents.ts` exports registered components
+4. **Page Rendering**: Dynamic routes use Content component with customComponents prop
+
+## Key Integration Points
+
+### 1. Custom Components (`src/lib/builders/customComponents.ts`)
+
+All components for Builder.io are defined and exported here:
+
+```typescript
+import Hero from '$lib/components/hero/Hero.svelte';
+import FeatureCard from '$lib/components/features/FeatureCard.svelte';
+import Header from '$lib/components/layout/Header.svelte';
+import Button from '$lib/components/layout/Button.svelte';
+
+export const CUSTOM_COMPONENTS = [
+  {
+    component: Hero,
+    name: 'Hero',
+    inputs: [
+      { name: 'title', type: 'string', defaultValue: 'Title' },
+      // ... other inputs
+    ]
+  },
+  // ... other components
+];
+```
+
+**Rules:**
+- Import the actual Svelte component (not the name string)
+- Component name must match what appears in Builder.io
+- Define all Builder inputs as props
+- Include meaningful input definitions
+- Export as a single `CUSTOM_COMPONENTS` array
+
+### 2. Page Rendering with Content Component
+
+Builder content is rendered with the `<Content>` component:
+
+```svelte
+<!-- src/routes/[...path]/+page.svelte -->
+<script lang="ts">
+  import { Content } from '@builder.io/sdk-svelte';
+  import { PUBLIC_BUILDER_API_KEY } from '$env/static/public';
+  import { CUSTOM_COMPONENTS } from '$lib/builders/customComponents';
+  
+  let { data } = $props();
+</script>
+
+<Content 
+  model="page" 
+  content={data.content} 
+  apiKey={PUBLIC_BUILDER_API_KEY}
+  customComponents={CUSTOM_COMPONENTS}
+/>
+```
+
+**Rules:**
+- Pass customComponents prop to Content component
+- Provide the content object from server data
+- Specify correct model type (page, etc.)
+- Always include API key
+- Ensure PUBLIC_BUILDER_API_KEY is set
+
+### 3. Server-Side Data Loading
+
+Load Builder content on the server:
+
+```typescript
+// src/routes/[...path]/+page.server.ts
+import { PUBLIC_BUILDER_API_KEY } from '$env/static/public';
+
+export async function load({ params }) {
+  const path = '/' + (params.path || '');
+  
+  const response = await fetch(
+    `https://cdn.builder.io/api/v1/pages?query.data.path="${path}"`,
+    {
+      headers: {
+        'Authorization': `Bearer ${PUBLIC_BUILDER_API_KEY}`
+      }
+    }
+  );
+  
+  const data = await response.json();
+  
+  return {
+    content: data.results?.[0] || null
+  };
+}
+```
+
+**Rules:**
+- Fetch content server-side for SEO
+- Handle missing pages gracefully
+- Cache responses appropriately
+- Set correct authorization headers
+
+### 4. Environment Configuration
+
+Required environment variables:
+
+```env
+PUBLIC_BUILDER_API_KEY=your_api_key
+VITE_BUILDER_API_KEY=your_api_key
+VITE_BUILDER_SPACE_ID=your_space_id
+```
+
+**Rules:**
+- PUBLIC_* variables available in browser
+- VITE_* variables only on server
+- Set in `.env.local` for development
+- Set in deployment platform for production
+- Never commit `.env.local`
+
+### 5. Component Input Types
+
+Map Svelte props to Builder input types:
+
+| Builder Type | Description | Svelte Prop Type |
+|---|---|---|
+| `string` | Text input | `string` |
+| `number` | Number input | `number` |
+| `boolean` | Toggle/checkbox | `boolean` |
+| `richText` | WYSIWYG editor | `string` |
+| `image` | Image picker | `string` (URL) |
+| `color` | Color picker | `string` (hex) |
+| `link` | Link/URL picker | `string` (URL) |
+| `array` | List of objects | `Array<any>` |
+| `object` | Complex object | `Record<string, any>` |
+
+## Page Creation Workflow
+
+1. Open https://builder.io and navigate to your space
+2. Click "Add Builder Page"
+3. Name the page (e.g., "About") - becomes the URL slug
+4. The new page is created at `/about`
+5. Click "Edit" to open the visual builder
+6. Drag your custom components to the canvas
+7. Configure component properties
+8. Click "Publish" to save
+9. Visit `http://localhost:3000/about` to see your published page
+
+## Component Type Mapping
+
+TypeScript interface props ↔ Builder inputs:
+
+```typescript
+interface Props {
+  title?: string;              // -> { name: 'title', type: 'string' }
+  count?: number;             // -> { name: 'count', type: 'number' }
+  active?: boolean;           // -> { name: 'active', type: 'boolean' }
+  description?: string;       // -> { name: 'description', type: 'richText' }
+  image?: string;             // -> { name: 'image', type: 'image' }
+  color?: string;             // -> { name: 'color', type: 'color' }
+  link?: string;              // -> { name: 'link', type: 'link' }
+  items?: Array<any>;         // -> { name: 'items', type: 'array' }
+  metadata?: Record<k, v>;    // -> { name: 'metadata', type: 'object' }
+}
+```
+
+## Error Handling
+
+Handle missing Builder content gracefully:
+
+```svelte
+<script lang="ts">
+  let { data } = $props();
+  const hasContent = !!data.content;
+</script>
+
+{#if hasContent}
+  <Content 
+    model="page" 
+    content={data.content} 
+    customComponents={CUSTOM_COMPONENTS} 
+  />
+{:else}
+  <div class="p-8 text-center">
+    <h1>Page not found</h1>
+    <p>This page hasn't been published in Builder.io yet.</p>
+  </div>
+{/if}
+```
+
+## Performance Optimization
+
+1. **Server-Side Rendering** - Content loads on server for SEO
+2. **Caching** - Cache Builder API responses
+3. **Code Splitting** - Components are lazy-loaded by Svelte
+4. **Image Optimization** - Builder serves optimized images
+
+## Debugging
+
+To debug Builder.io integration:
+
+1. Check API key is set: `echo $PUBLIC_BUILDER_API_KEY`
+2. Verify component names match in customComponents.ts
+3. Check Browser DevTools Network tab for Builder API calls
+4. Verify page is published in Builder.io
+5. Check page slug matches URL path
+// In development
+import { builderIntegration } from '$lib/builders/integration';
+builderIntegration.getConfig(); // Check configuration
+debugRegistry(); // Log all components
+```
+
+Check component registration:
+```bash
+curl http://localhost:5173/api/builder/components | jq
+```
+
+Inspect Builder content:
+```javascript
+// In browser console
+window.BUILDER_API_KEY // Check API key is set
+```
+
+## Security Considerations
+
+1. **API Key** - Keep VITE_BUILDER_API_KEY private
+2. **Content Validation** - Validate user input
+3. **XSS Protection** - Sanitize rich text content
+4. **CORS** - Configure properly
+5. **Rate Limiting** - Implement on API endpoints
+
+## Migration & Versioning
+
+When updating Builder.io:
+
+1. Check SDK breaking changes
+2. Update component registration if needed
+3. Test content rendering
+4. Update this documentation
+5. Communicate to content team

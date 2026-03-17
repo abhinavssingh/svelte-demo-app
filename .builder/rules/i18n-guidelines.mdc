@@ -1,0 +1,377 @@
+# Internationalization (i18n) Implementation Guidelines
+
+## Overview
+
+The application supports 10 languages out-of-the-box with automatic language detection and RTL support. The i18n system is built with Svelte stores for reactive translation updates.
+
+## Supported Languages
+
+| Code | Name | Native Name | Direction |
+|------|------|-------------|-----------|
+| en | English | English | LTR |
+| es | Spanish | Español | LTR |
+| fr | French | Français | LTR |
+| de | German | Deutsch | LTR |
+| it | Italian | Italiano | LTR |
+| ja | Japanese | 日本語 | LTR |
+| zh | Chinese | 中文 | LTR |
+| pt | Portuguese | Português | LTR |
+| ru | Russian | Русский | LTR |
+| ar | Arabic | العربية | RTL |
+
+## Core Stores
+
+### `currentLanguage`
+Reactive store holding current language code:
+
+```svelte
+<script>
+  import { currentLanguage } from '$lib/i18n/store';
+  
+  $currentLanguage // 'en'
+  currentLanguage.set('es'); // Change language
+</script>
+```
+
+### `t` (Translation)
+Derived store for getting translations:
+
+```svelte
+<script>
+  import { t } from '$lib/i18n/store';
+</script>
+
+<h1>{$t('nav.home')}</h1>
+<p>{$t('common.loading', 'Loading...')}</p> <!-- with fallback -->
+```
+
+### `languageConfig`
+Derived store with current language config:
+
+```svelte
+<script>
+  import { languageConfig } from '$lib/i18n/store';
+</script>
+
+<html lang={$languageConfig.code} dir={$languageConfig.direction}>
+```
+
+### `availableLanguages`
+Array of all available language configs:
+
+```svelte
+<script>
+  import { availableLanguages } from '$lib/i18n/store';
+</script>
+
+{#each availableLanguages as lang}
+  <option value={lang.code}>{lang.nativeName}</option>
+{/each}
+```
+
+## Adding Translations
+
+All translations are defined in `src/lib/i18n/store.ts`:
+
+```typescript
+const translations: Record<SupportedLanguage, Record<string, string>> = {
+  en: {
+    'nav.home': 'Home',
+    'nav.about': 'About',
+    'common.loading': 'Loading...'
+  },
+  es: {
+    'nav.home': 'Inicio',
+    'nav.about': 'Acerca de',
+    'common.loading': 'Cargando...'
+  },
+  // ... other languages
+};
+```
+
+### Translation Key Naming Convention
+
+Use dot notation with context hierarchy:
+
+```
+'section.subsection.key'
+
+Examples:
+- 'nav.home'
+- 'nav.about'
+- 'common.loading'
+- 'common.error'
+- 'hero.title'
+- 'hero.subtitle'
+- 'form.submit'
+- 'form.validation.required'
+```
+
+### Adding New Translations
+
+1. Add key to English in `translations.en`
+2. Add key to all other languages
+3. If translated content not available yet, use English as fallback
+
+```typescript
+// Good - fallback to English if needed
+'nav.newPage': 'New Page' // other languages same
+
+// If you don't know translation, repeat English
+es: {
+  'nav.newPage': 'New Page' // TODO: translate to Spanish
+}
+```
+
+## Using Translations in Components
+
+### In Svelte Templates
+
+```svelte
+<script>
+  import { t } from '$lib/i18n/store';
+</script>
+
+<!-- Basic usage -->
+<h1>{$t('nav.home')}</h1>
+
+<!-- With fallback -->
+<p>{$t('unknown.key', 'Default text')}</p>
+
+<!-- In conditionals -->
+{#if condition}
+  <span>{$t('nav.about')}</span>
+{/if}
+
+<!-- In lists -->
+{#each items as item}
+  <div>{$t(`nav.${item}`)}</div>
+{/each}
+```
+
+### In TypeScript
+
+```typescript
+import { get } from 'svelte/store';
+import { t } from '$lib/i18n/store';
+
+// Get current translation
+const translation = get(t)('nav.home');
+
+// Subscribe to changes
+t.subscribe(translator => {
+  console.log(translator('nav.home'));
+});
+```
+
+## Language Selection
+
+### Header Component Example
+
+```svelte
+<script>
+  import { currentLanguage, availableLanguages } from '$lib/i18n/store';
+</script>
+
+<select bind:value={$currentLanguage}>
+  {#each availableLanguages as lang (lang.code)}
+    <option value={lang.code}>
+      {lang.nativeName}
+    </option>
+  {/each}
+</select>
+```
+
+### Language Persistence
+
+Language selection is automatically saved to `localStorage`:
+
+```typescript
+// In store, automatically handled:
+currentLanguage.subscribe((lang) => {
+  localStorage.setItem('app-language', lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = LANGUAGES[lang].direction;
+});
+```
+
+## Automatic Language Detection
+
+On first visit, language is detected from:
+
+1. `localStorage.getItem('app-language')` - Previously selected
+2. `navigator.language` - Browser language
+3. Default to `'en'` - English fallback
+
+## RTL Support
+
+Arabic automatically gets RTL treatment:
+
+```typescript
+// Applied automatically by store
+document.documentElement.dir = 'rtl'; // for Arabic
+document.documentElement.dir = 'ltr'; // for others
+```
+
+### RTL in Components
+
+```svelte
+<script>
+  import { languageConfig } from '$lib/i18n/store';
+</script>
+
+<div class={$languageConfig.direction === 'rtl' ? 'rtl' : 'ltr'}>
+  {/* content */}
+</div>
+
+<!-- Or use Tailwind -->
+<div class="ltr:ml-4 rtl:mr-4">Content</div>
+```
+
+### RTL in CSS
+
+```css
+.component {
+  margin-left: 1rem;
+}
+
+[dir="rtl"] .component {
+  margin-right: 1rem;
+  margin-left: 0;
+}
+```
+
+## Translation Guidelines
+
+### Key Points
+
+1. **Consistency** - Use same term everywhere (not "Home" and "Homepage")
+2. **Contextual** - Consider context when naming keys
+3. **Brevity** - Keep keys reasonably short
+4. **Clarity** - Key names should indicate content
+
+### Examples of Good Key Names
+
+✅ `'nav.home'` - Navigation, home link
+✅ `'button.submit'` - Button text, submit action
+✅ `'form.email.label'` - Form, email field, label
+✅ `'error.notFound'` - Error message, not found
+✅ `'hero.title'` - Hero section, title text
+
+### Examples of Bad Key Names
+
+❌ `'txt1'` - No context
+❌ `'homeButtonText'` - Mixed case convention
+❌ `'welcome_message'` - Inconsistent separators
+❌ `'hello'` - Too vague, not namespaced
+
+## Complex Translations
+
+For strings with variables or special formatting:
+
+```typescript
+// Define translation with placeholder
+en: {
+  'greeting.personalized': 'Hello, {name}!',
+  'pagination.showing': 'Showing {from} to {to} of {total}'
+}
+
+// Helper function (add to store if needed)
+function translate(key: string, vars?: Record<string, string>) {
+  let text = translations[currentLang][key] || key;
+  if (vars) {
+    Object.entries(vars).forEach(([k, v]) => {
+      text = text.replace(`{${k}}`, v);
+    });
+  }
+  return text;
+}
+```
+
+## Date and Number Formatting
+
+Use locale-aware utilities:
+
+```typescript
+// In $lib/utils/index.ts
+export function formatDate(date: Date, locale: SupportedLanguage = 'en') {
+  return date.toLocaleDateString(
+    locale === 'zh' ? 'zh-CN' : locale,
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }
+  );
+}
+
+// Usage
+<p>{formatDate(new Date(), $currentLanguage)}</p>
+```
+
+## Testing i18n
+
+```typescript
+import { render } from '@testing-library/svelte';
+import { currentLanguage } from '$lib/i18n/store';
+import Component from './Component.svelte';
+
+test('displays translated text', async () => {
+  currentLanguage.set('es');
+  const { getByText } = render(Component);
+  expect(getByText('Inicio')).toBeInTheDocument();
+});
+```
+
+## Migration from Non-i18n
+
+If migrating existing components:
+
+1. Extract all hardcoded text
+2. Create key-value pairs in translations
+3. Replace text with `$t('key')` calls
+4. Add translations for all languages
+5. Test in each language
+
+## Performance Considerations
+
+1. **Store subscribers** - Limited number, derived stores are efficient
+2. **DOM updates** - Svelte optimizes reactivity automatically
+3. **Large translation sets** - Keep reasonable size (< 1000 keys)
+4. **Build time** - i18n adds ~5KB gzipped
+
+## Common Patterns
+
+### Language Selector with Flag
+
+```svelte
+<select bind:value={$currentLanguage}>
+  {#each availableLanguages as { code, nativeName }}
+    <option value={code}>{nativeName}</option>
+  {/each}
+</select>
+```
+
+### Conditional Content by Language
+
+```svelte
+<script>
+  import { currentLanguage } from '$lib/i18n/store';
+</script>
+
+{#if $currentLanguage === 'ar'}
+  <p>هذا نص باللغة العربية</p>
+{:else}
+  <p>This content is for other languages</p>
+{/if}
+```
+
+### SEO with Language Markup
+
+```svelte
+<html lang={$languageConfig.code} dir={$languageConfig.direction}>
+  <head>
+    <link rel="alternate" hreflang={$languageConfig.code} href="..." />
+  </head>
+</html>
+```

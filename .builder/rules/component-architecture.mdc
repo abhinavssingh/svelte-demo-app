@@ -1,0 +1,191 @@
+# Component Architecture Guidelines
+
+## Component Structure
+
+All components follow a consistent architecture pattern using Svelte 5 runes:
+
+### Svelte Component Template
+
+```svelte
+<script lang="ts">
+  interface Props {
+    prop1?: string;
+    prop2?: number;
+    prop3?: boolean;
+  }
+
+  // Define all props with $props rune
+  const { prop1 = 'default', prop2 = 0, prop3 = false } = $props<Props>();
+</script>
+
+<!-- Template -->
+<div class="flex flex-col">
+  <!-- Content -->
+</div>
+
+<style>
+  /* Component styles if needed */
+</style>
+```
+
+## Component Categories
+
+### 1. Layout Components
+- **Location**: `src/lib/components/layout/`
+- **Purpose**: Site structure (Header, Footer, Navigation)
+- **Exports**: Layout props like `sticky`, `navItems`, etc.
+- **Examples**: Header.svelte, Footer.svelte, Sidebar.svelte
+
+### 2. Hero Components
+- **Location**: `src/lib/components/hero/`
+- **Purpose**: Full-width promotional sections
+- **Props**: title, subtitle, backgroundImage, ctaText, ctaLink
+- **Examples**: Hero.svelte, HeroBanner.svelte
+
+### 3. Feature Components
+- **Location**: `src/lib/components/features/`
+- **Purpose**: Single features, feature cards, feature sections
+- **Props**: icon, title, description, link
+- **Examples**: FeatureCard.svelte, FeaturesSection.svelte
+
+### 4. Content Components
+- **Location**: `src/lib/components/content/` (create as needed)
+- **Purpose**: Rich content, CTAs, testimonials
+- **Props**: content, link, image, metadata
+
+## Registration Pattern
+
+Every component must be registered in `src/lib/builders/customComponents.ts`:
+
+```typescript
+import MyComponent from '$lib/components/category/MyComponent.svelte';
+
+export const CUSTOM_COMPONENTS = [
+  {
+    component: MyComponent,
+    name: 'MyComponent',
+    inputs: [
+      {
+        name: 'propName',
+        type: 'string', // string|number|boolean|object|array|richText|image|color|link
+        defaultValue: 'default',
+        required: true,
+        helperText: 'Help for Builder UI'
+      }
+    ]
+  },
+  // ... other components
+];
+```
+
+**Rules:**
+- Import the actual Svelte component
+- Include descriptive names and help text
+- Define all props in inputs array
+- Use appropriate input types for validation
+- Names must match component export
+
+## Input Types
+
+- **string** - Text input
+- **number** - Number input
+- **boolean** - Toggle/checkbox
+- **richText** - WYSIWYG editor
+- **image** - Image picker
+- **color** - Color picker
+- **link** - Link/URL picker
+- **array** - List of objects
+- **object** - Complex object
+
+## Props Best Practices
+
+1. **Always define defaults** - Provide sensible defaults for all props
+2. **Type everything** - Use TypeScript types, not `any`
+3. **Optional vs Required** - Mark required props clearly
+4. **Group related props** - Object props for n-tuples
+5. **Document with comments** - Explain non-obvious props
+
+## Example Complete Component
+
+```svelte
+<script lang="ts">
+  /**
+   * Feature Card Component
+   * Displays a single feature with icon, title, and description
+   */
+
+  interface Props {
+    icon?: string;
+    title?: string;
+    description?: string;
+    link?: string;
+    accentColor?: string;
+  }
+
+  const { 
+    icon = '', 
+    title = 'Feature', 
+    description = 'Feature description', 
+    link = '',
+    accentColor = '#3B82F6'
+  } = $props<Props>();
+</script>
+
+<div class="rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+  {#if icon}
+    <img src={icon} alt={title} class="w-12 h-12 mb-4" />
+  {/if}
+
+  <h3 class="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+  <p class="text-gray-600 mb-4">{description}</p>
+
+  {#if link}
+    <a href={link} class="text-blue-600 hover:text-blue-700">
+      Learn More →
+    </a>
+  {/if}
+</div>
+```
+
+## Component Discovery
+
+Components are registered in `src/lib/builders/customComponents.ts` and are automatically available in the Builder.io visual editor. To verify your components:
+
+1. Ensure they're imported and included in `CUSTOM_COMPONENTS` array
+2. Start the dev server: `npm run dev`
+3. Go to https://builder.io and visit your space
+4. Create a new page or edit existing content
+5. All registered components should appear in the component palette
+
+## Reusability Guidelines
+
+1. **Keep components focused** - Each component does one thing well
+2. **Composition over inheritance** - Favor slot-based composition
+3. **No side effects** - Components should be pure
+4. **Testable** - Props-in, UI-out
+5. **Accessible** - Semantic HTML, ARIA labels
+
+## Common Anti-Patterns to Avoid
+
+1. ❌ Hardcoding text - make it a prop
+2. ❌ Tight coupling to routes - use props for links
+3. ❌ Global state mutations - use stores/props
+4. ❌ Mixed concerns - separate styling, logic, content
+5. ❌ Excessive nesting - keep component tree shallow
+
+## File Organization
+
+```
+src/lib/components/
+├── layout/
+│   ├── Header.svelte
+│   ├── Footer.svelte
+│   └── Button.svelte
+├── hero/
+│   ├── Hero.svelte
+│   └── HeroBanner.svelte
+├── features/
+│   ├── FeatureCard.svelte
+│   └── FeaturesSection.svelte
+└── index.ts (re-exports)
+```

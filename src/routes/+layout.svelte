@@ -1,38 +1,40 @@
 <script lang="ts">
-let { children } = $props();
-import { page } from '$app/state';
+  let { children } = $props();
+  import { page } from '$app/state';
 
-const seo = $state({
-  title: '',
-  description: '',
-  canonical: '',
-  ogTitle: '',
-  ogDescription: '',
-  ogImage: '',
-  ogUrl: ''
-});
-$effect(() => {
-  const d = page.data ?? {};
+  const seo = $state({
+    title: '',
+    description: '',
+    canonical: '',
+    ogTitle: '',
+    ogDescription: '',
+    ogImage: '',
+    ogUrl: ''
+  });
 
-  // Prefer structured `data.seo` if present, otherwise fall back to legacy fields
-  const src = d.seo ?? {
-    title: d.metatitle ?? d?.content?.data?.title,
-    description: d.metadescription ?? d?.content?.data?.description,
-    canonical: d.canonical,
-    ogTitle: d.ogtitle ?? d?.content?.data?.ogTitle,
-    ogDescription: d.ogdescription ?? d?.content?.data?.ogDescription,
-    ogImage: d.ogimage ?? d?.content?.data?.ogImage,
-    ogUrl: d.ogurl
-  };
+  // Update SEO metadata
+  $effect(() => {
+    const d = page.data ?? {};
 
- seo.title = src.title ?? '';
-  seo.description = src.description ?? '';
-  seo.canonical = src.canonical ?? page?.url?.href ?? '';
-  seo.ogTitle = src.ogTitle ?? src.title ?? '';
-  seo.ogDescription = src.ogDescription ?? src.description ?? '';
-  seo.ogImage = src.ogImage ?? '';
-  seo.ogUrl = src.ogUrl ?? src.canonical ?? page?.url?.href ?? '';
-});
+    // Prefer structured `data.seo` if present, otherwise fall back to legacy fields
+    const src = d.seo ?? {
+      title: d.metatitle ?? d?.content?.data?.title,
+      description: d.metadescription ?? d?.content?.data?.description,
+      canonical: d.canonical,
+      ogTitle: d.ogtitle ?? d?.content?.data?.ogTitle,
+      ogDescription: d.ogdescription ?? d?.content?.data?.ogDescription,
+      ogImage: d.ogimage ?? d?.content?.data?.ogImage,
+      ogUrl: d.ogurl
+    };
+
+    seo.title = src.title ?? '';
+    seo.description = src.description ?? '';
+    seo.canonical = src.canonical ?? page?.url?.href ?? '';
+    seo.ogTitle = src.ogTitle ?? src.title ?? '';
+    seo.ogDescription = src.ogDescription ?? src.description ?? '';
+    seo.ogImage = src.ogImage ?? '';
+    seo.ogUrl = src.ogUrl ?? src.canonical ?? page?.url?.href ?? '';
+  });
 </script>
 
 <svelte:head>
@@ -48,8 +50,6 @@ $effect(() => {
 
 <header class="site-header">
   <nav class="flex gap-4 text-sm">
-    <a href="/" class="text-brand hover:underline">Home</a>
-    <a href="/about" class="hover:underline">About</a>
   </nav>
 </header>
 
@@ -58,5 +58,4 @@ $effect(() => {
 </main>
 
 <footer class="site-footer">
-  <small>© Demo</small>
 </footer>

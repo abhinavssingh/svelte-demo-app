@@ -1,6 +1,8 @@
 <script lang="ts">
   import { Content, isPreviewing } from "@builder.io/sdk-svelte";
   import { PUBLIC_BUILDER_API_KEY } from "$env/static/public";
+  import { CUSTOM_COMPONENTS } from "$lib/builders/customComponents";
+  import { currentLanguage } from "$lib/i18n/store";
   import type { PageProps  } from "./$types";
 
   const model = "demo-home-page";
@@ -12,13 +14,20 @@
   const canShowContent = $derived(
     () => Boolean(data?.content) || isPreviewing(),
   );
+
+  // Use locale from server data or fall back to current language store
+  const locale = $derived(data?.locale || $currentLanguage);
 </script>
 
 {#if canShowContent}
   <section class="builder-prose">
-    <div>page Title: {data.content?.data?.title || "Unpublished"}</div>
-    <div>page Description: {data.content?.data?.description || "Unpublished"}</div>
-    <Content {model} content={data.content} apiKey={PUBLIC_BUILDER_API_KEY} />
+    <Content 
+      {model} 
+      content={data.content} 
+      {locale}
+      apiKey={PUBLIC_BUILDER_API_KEY} 
+      customComponents={CUSTOM_COMPONENTS} 
+    />
   </section>
 {:else}
   <h1 class="text-xl font-semibold">Not found</h1>

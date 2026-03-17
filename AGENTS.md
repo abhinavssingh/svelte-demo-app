@@ -1,156 +1,337 @@
-# Publish SvelteKit Tailwind Starter
+# Publish SvelteKit + Builder.io Integration
 
-A production-ready SvelteKit application template with TypeScript, TailwindCSS 4, and modern tooling.
+A production-ready SvelteKit 2 application fully integrated with Builder.io Publish for visual site building and content management.
 
 ## Tech Stack
 
-- **Frontend**: SvelteKit 2 + Svelte 5 + TypeScript 5 + TailwindCSS 4
-- **Styling**: TailwindCSS 4 with postcss
-- **Build Tool**: Vite 7 with SvelteKit
+- **Frontend**: SvelteKit 2.53.2 + Svelte 5.53.5 + TypeScript 5.9.3
+- **Styling**: TailwindCSS 4.2.1 with PostCSS
+- **Builder.io SDK**: @builder.io/sdk-svelte 5.2.0
+- **Build Tool**: Vite 7.3.1
 - **Package Manager**: npm
 - **Linting**: ESLint 9 + Prettier
-- **Type Checking**: TypeScript 5 + svelte-check
+- **Type Checking**: TypeScript 5
 
 ## Project Structure
 
 ```
-src/                     	# SvelteKit application source
-├── app.html             	# Main app template
-├── app.css              	# Global styles with TailwindCSS imports
-├── app.d.ts             	# TypeScript declarations
-├── routes/              	# SvelteKit file-based routing
-|	├──[...catchall]	 	# Dymamnic rouetes
-│	│	├── +page.svelte 	# Dynamic page components
-│ 	│	└── +page.server.ts	# Dynamic server load
-│	│
-│   ├── +layout.svelte   	# Root layout component
-│   └── +page.svelte     	# Home page component
-├── lib/                 	# Shared components and utilities
-└── demo.spec.ts         	# Example test file
+src/
+├── app.html                      # Main app template
+├── app.css                       # Global styles with TailwindCSS imports
+├── app.d.ts                      # TypeScript declarations
+├── hooks.server.ts               # Server-side initialization
+├── routes/
+│   ├── +layout.svelte           # Root layout with SEO
+│   ├── api/
+│   │   └── builder/
+│   │       └── components/      # Component metadata endpoint
+│   └── [...path]/
+│       ├── +page.server.ts      # Server-side page data loading
+│       └── +page.svelte         # Dynamic page rendering with Builder.io Content
 │
-static/                  	# Static assets
-├── favicon.svg          	# Site favicon
-└── ...                  	# Other static files
+├── lib/
+│   ├── builders/
+│   │   ├── customComponents.ts  # Svelte components + metadata for Builder.io
+│   │   └── integration.ts       # Builder.io SDK initialization
+│   ├── api/
+│   │   └── client.ts            # API client with caching
+│   ├── i18n/
+│   │   └── store.ts             # Multilingual support
+│   ├── components/
+│   │   ├── layout/              # Layout components (Header, Button)
+│   │   ├── hero/                # Hero components
+│   │   └── features/            # Feature components
+│   ├── types/
+│   │   └── index.ts             # TypeScript types
+│   └── utils/
+│       └── index.ts             # Utility functions
+│
+.builder/
+└── rules/                       # AI instruction files
+    ├── application-overview.mdc
+    ├── component-architecture.mdc
+    ├── builder-integration.mdc
+    └── i18n-guidelines.mdc
 ```
 
 ## Key Features
 
-### SvelteKit File-Based Routing
+### Builder.io Integration
 
-The application uses SvelteKit's modern file-based routing system:
+- **Custom Components**: Svelte components registered with Builder.io SDK
+- **Content Rendering**: Content component with customComponents prop for visual editing
+- **Type-Safe**: Full TypeScript support with Svelte 5 runes
+- **SDK Integration**: `@builder.io/sdk-svelte` 5.2.0
+- **No Devtools Required**: Components available in Builder.io visual editor by default
 
-- `+page.svelte` files define page components
-- `+layout.svelte` files define layout components
-- `+page.server.ts`	files define server load
-- Automatic route generation based on file structure
-- Server-side rendering (SSR) and static site generation (SSG) support
+### Component Architecture
 
-### Styling System
-
-- **Primary**: TailwindCSS 4.2.1 utility classes
-- **PostCSS**: Autoprefixer for cross-browser compatibility
-- **Them**: Using @theme directive
+Modular, composable components using Svelte 5 runes:
 
 ```svelte
-<!-- Example of TailwindCSS usage in Svelte components -->
-<script>
-	// Component logic here
+<script lang="ts">
+  import { Content } from '@builder.io/sdk-svelte';
+  import { CUSTOM_COMPONENTS } from '$lib/builders/customComponents';
+
+  let { data } = $props();
 </script>
 
-<div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200"
->
-	<div class="text-center">
-		<h1 class="text-2xl font-semibold text-slate-800">Welcome to Publish</h1>
-	</div>
-</div>
+<Content 
+  model="page" 
+  content={data.content} 
+  customComponents={CUSTOM_COMPONENTS} 
+/>
 ```
 
-### Development Commands
+### Internationalization (i18n)
+
+10 languages with automatic detection:
+
+```svelte
+<script>
+  import { t, currentLanguage, availableLanguages } from '$lib/i18n/store';
+</script>
+
+<h1>{$t('nav.home')}</h1>
+```
+
+Supported: en, es, fr, de, it, ja, zh, pt, ru, ar
+
+## Development Commands
 
 ```bash
-npm run dev          # Start development server
+npm run dev          # Start development server (includes Builder.io Devtools)
 npm run build        # Production build
 npm run preview      # Preview production build
 npm run check        # Type check with svelte-check
-npm run test         # Run tests with Vitest
 npm run lint         # Lint with ESLint and Prettier
+npm run format       # Format code with Prettier
 ```
 
-## Adding Features
+## Quick Start with Builder.io
 
-### New Pages
+### 1. Setup API Keys
 
-1. Create page in `src/routes/`:
+Edit `.env.local` with your Builder.io credentials:
+```env
+VITE_BUILDER_SPACE_ID=your_space_id
+PUBLIC_BUILDER_API_KEY=your_key
+```
+
+### 2. Start Development Server
+
+```bash
+npm run dev
+```
+
+### 3. Open Builder.io Visual Editor
+
+Go to https://builder.io to access your space. Your Svelte components will be available in the component palette:
+- Hero
+- FeatureCard
+- Header
+- Button
+
+### 4. Create and Edit Pages
+
+1. In Builder.io, click "Add Builder Page"
+2. Give it a URL (e.g., `/about`)
+3. Click "Edit" to open visual builder
+4. Drag and drop your custom components
+5. Configure component properties
+6. Publish when ready
+7. Visit `http://localhost:3000/about` to see your published page
+
+## Component Development
+
+### Register New Component
+
+1. **Create your Svelte component** using Svelte 5 runes:
 
 ```svelte
-<!-- src/routes/about/+page.svelte -->
-<script>
-	// Page logic here
+<!-- src/lib/components/custom/MyComponent.svelte -->
+<script lang="ts">
+  interface Props {
+    title?: string;
+    items?: Array<{ name: string }>;
+  }
+
+  const { title = 'Default', items = [] } = $props<Props>();
 </script>
 
-<div class="container mx-auto px-4 py-8">
-	<h1 class="text-3xl font-bold text-gray-900">About Us</h1>
-	<p class="mt-4 text-gray-600">This is the about page.</p>
+<div class="space-y-4">
+  <h2 class="text-2xl font-bold">{title}</h2>
+  {#each items as item}
+    <div class="bg-white p-4 rounded-lg shadow">
+      {item.name}
+    </div>
+  {/each}
 </div>
 ```
 
-2. Access via `/about` route automatically
+2. **Register in customComponents.ts**:
 
-### New Components
+```ts
+// src/lib/builders/customComponents.ts
+import MyComponent from '$lib/components/custom/MyComponent.svelte';
 
-1. Create component in `src/lib/components/`:
-
-```svelte
-<!-- src/lib/components/MyComponent.svelte -->
-<script>
-	export let title = 'Default Title';
-	export let description = 'Default description';
-</script>
-
-<div class="rounded-lg bg-white p-4 shadow">
-	<h2 class="text-xl font-bold text-gray-900">{title}</h2>
-	<p class="text-gray-600">{description}</p>
-</div>
+export const CUSTOM_COMPONENTS = [
+  {
+    component: MyComponent,
+    name: 'MyComponent',
+    inputs: [
+      {
+        name: 'title',
+        type: 'string',
+        defaultValue: 'Default Title'
+      },
+      {
+        name: 'items',
+        type: 'array'
+      }
+    ]
+  },
+  // ... other components
+];
 ```
 
-2. Import in your pages:
-
-```svelte
-<script>
-	import MyComponent from '$lib/components/MyComponent.svelte';
-</script>
-
-<MyComponent title="Custom Title" description="Custom description" />
-```
-
-2. Add custom styles in `src/app.css`:
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-	.btn-primary {
-		@apply rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700;
-	}
-}
-```
+3. **Use in your pages** - components automatically available in Builder.io editor
 
 ## Production Deployment
 
-- **Development**: `npm run dev` for local development
+- **Development**: `npm run dev` for local development with Builder.io Devtools
 - **Build**: `npm run build` creates optimized production build
 - **Preview**: `npm run preview` to preview production build
 - **Type Check**: `npm run check` for TypeScript validation
+- **Environment**: Set PUBLIC_BUILDER_API_KEY and VITE_BUILDER_SPACE_ID
 
 ## Architecture Notes
 
-- SvelteKit 2 with Svelte 5 for modern reactive components
-- TypeScript throughout the application
-- TailwindCSS 4.2.1 for utility-first styling
-- Vite 7 for fast development and optimized builds
-- ESLint + Prettier for code quality
-- File-based routing with automatic route generation
-- Server-side rendering (SSR) and static site generation (SSG) support
+### Large Application Structure
+
+The project is organized for scalability:
+
+- **Modular components**: Each component is self-contained and reusable
+- **Centralized registry**: All components registered in `$lib/builders/registry.ts`
+- **API-driven**: Data flows through typed API layer
+- **i18n first-class**: Language support built from the start
+- **Type-safe throughout**: Full TypeScript for developer confidence
+
+### Key Files
+
+- **`$lib/builders/registry.ts`**: Central component management
+- **`$lib/builders/integration.ts`**: Builder SDK initialization
+- **`$lib/i18n/store.ts`**: Multilingual store and translations
+- **`$lib/api/client.ts`**: Typed API client with caching
+- **`src/hooks.server.ts`**: App initialization and middleware
+- **`src/routes/api/`**: Backend API endpoints
+
+### Builder.io Integration Points
+
+1. **Devtools**: `npm init builder.io@latest` enables visual editing
+2. **Component Registry**: Automatic component discovery
+3. **Drag & Drop**: Visual builder places components on pages
+4. **Type System**: Props automatically become Builder inputs
+5. **API Access**: Builder fetches components via `/api/builder/components`
+
+## Best Practices
+
+### Component Guidelines
+
+1. **Always export props** - Make everything a prop for Builder.io compatibility
+2. **Type props strictly** - Use TypeScript for IDE support
+3. **Responsive design** - Use Tailwind breakpoints (sm, md, lg, xl)
+4. **Accessibility** - Include semantic HTML and ARIA labels
+5. **Dark mode ready** - Use Tailwind dark: classes when applicable
+
+### i18n Guidelines
+
+1. **Use key-based translations** - e.g., `$t('nav.home')`
+2. **Update store.ts** - Add translations there, not in components
+3. **Format dates with store** - Use locale-aware formatting
+4. **RTL support** - Built-in for Arabic and other RTL languages
+
+### API Client Usage
+
+```ts
+// Always use apiClient for data fetching
+import { apiClient } from '$lib';
+
+// With proper error handling
+const result = await apiClient.getPageData('about', 'en');
+if (!result.success) {
+  console.error(result.error);
+} else {
+  // Use result.data
+}
+```
+
+### Type Safety
+
+```ts
+// Import types from $lib/types
+import type { PageData, ComponentConfig, SEOData } from '$lib/types';
+
+// Use in component props
+export let page: PageData;
+export let config: ComponentConfig;
+```
+
+## Common Tasks
+
+### Add a new language
+
+1. Add to `LANGUAGES` object in `$lib/i18n/store.ts`
+2. Add translations to `translations` object
+3. Verify RTL setting if needed
+
+### Create API endpoint
+
+1. Create in `src/routes/api/endpoint/+server.ts`
+2. Return JSON with APIResponse type
+3. Use error handling pattern
+
+### Cache API responses
+
+```ts
+// Already configured in apiClient
+apiClient.setCacheTTL(10 * 60 * 1000); // 10 minutes
+```
+
+### Register component programmatically
+
+```ts
+import { registerComponent } from '$lib/builders/registry';
+
+registerComponent('MyComponent', {
+  name: 'MyComponent',
+  // ... config
+});
+```
+
+## Troubleshooting
+
+### Components not appearing in Builder.io
+- Verify API keys in `.env.local`
+- Check components are exported from `customComponents.ts`
+- Component names must match between registration and imports
+- Clear browser cache and refresh Builder.io editor
+
+### Content not rendering on published pages
+- Check page slug matches in Builder.io (e.g., `/about`)
+- Verify `PUBLIC_BUILDER_API_KEY` is set in `.env.local`
+- Ensure page is published in Builder.io
+- Check network tab for API errors in browser console
+
+### i18n not updating
+- Use `$t()` store function, not direct translation object
+- Subscribe to `$currentLanguage` to trigger reactivity
+- Verify translation keys exist in `store.ts`
+
+## Resources
+
+- [Builder.io Docs](https://www.builder.io/c/docs)
+- [SvelteKit Docs](https://kit.svelte.dev/)
+- [Svelte 5 Docs](https://svelte.dev/)
+- [TailwindCSS 4](https://tailwindcss.com/)
+- [Builder SDK Svelte](https://github.com/BuilderIO/builder)
