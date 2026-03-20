@@ -3,15 +3,15 @@
  * Svelte components are registered via customComponents.ts and passed to Content component
  * Localization is handled via the locale prop to resolve localized fields
  */
-
 import { Content } from '@builder.io/sdk-svelte';
 import { CUSTOM_COMPONENTS } from './customComponents';
 import type { BuilderContentData } from '$lib/types';
 import type { SupportedLanguage } from '$lib/types';
+import { PUBLIC_BUILDER_API_KEY, PUBLIC_VITE_BUILDER_SPACE_ID } from '$env/static/public';
 
 // Environment variables
-const BUILDER_API_KEY = import.meta.env.PUBLIC_BUILDER_API_KEY || '';
-const BUILDER_SPACE_ID = import.meta.env.VITE_BUILDER_SPACE_ID || '';
+const BUILDER_API_KEY = PUBLIC_BUILDER_API_KEY || '';
+const BUILDER_SPACE_ID = PUBLIC_VITE_BUILDER_SPACE_ID || '';
 
 interface BuilderConfig {
   apiKey: string;

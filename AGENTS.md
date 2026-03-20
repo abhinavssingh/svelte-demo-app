@@ -114,7 +114,7 @@ npm run format       # Format code with Prettier
 
 Edit `.env.local` with your Builder.io credentials:
 ```env
-VITE_BUILDER_SPACE_ID=your_space_id
+PUBLIC_VITE_BUILDER_SPACE_ID=your_space_id
 PUBLIC_BUILDER_API_KEY=your_key
 ```
 
@@ -203,7 +203,7 @@ export const CUSTOM_COMPONENTS = [
 - **Build**: `npm run build` creates optimized production build
 - **Preview**: `npm run preview` to preview production build
 - **Type Check**: `npm run check` for TypeScript validation
-- **Environment**: Set PUBLIC_BUILDER_API_KEY and VITE_BUILDER_SPACE_ID
+- **Environment**: Set PUBLIC_BUILDER_API_KEY and PUBLIC_VITE_BUILDER_SPACE_ID
 
 ## Architecture Notes
 

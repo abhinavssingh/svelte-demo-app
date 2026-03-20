@@ -22,7 +22,7 @@
 Edit `.env.local`:
 ```env
 PUBLIC_BUILDER_API_KEY=your_key_here
-VITE_BUILDER_SPACE_ID=your_space_here
+PUBLIC_VITE_BUILDER_SPACE_ID=your_space_here
 ```
 
 Get keys from: https://builder.io/account/home

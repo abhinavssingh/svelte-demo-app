@@ -15,7 +15,7 @@ if [ ! -f .env.local ]; then
 # Builder.io API Key and Space ID
 # Get these from: https://builder.io/account/home
 VITE_BUILDER_API_KEY=your_api_key_here
-VITE_BUILDER_SPACE_ID=your_space_id_here
+PUBLIC_VITE_BUILDER_SPACE_ID=your_space_id_here
 EOF
     echo "✅ Created .env.local - UPDATE WITH YOUR API KEYS"
 else

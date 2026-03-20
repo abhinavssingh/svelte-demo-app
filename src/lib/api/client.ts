@@ -2,8 +2,8 @@
  * API Client for Builder.io and External Data Fetching
  * Handles all HTTP requests with proper error handling and caching
  */
-
 import type { APIResponse, BuilderContentData, PageData, ContentQuery } from '$lib/types';
+import { PUBLIC_BUILDER_API_KEY, PUBLIC_BUILDER_CDN_URL } from '$env/static/public';
 
 interface CacheEntry<T> {
   data: T;
@@ -19,7 +19,7 @@ class APIClient {
 
   constructor(baseUrl: string = '', builderApiKey: string = '') {
     this.baseUrl = baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
-    this.builderApiKey = builderApiKey || import.meta.env.VITE_BUILDER_API_KEY || '';
+    this.builderApiKey = builderApiKey || PUBLIC_BUILDER_API_KEY || '';
   }
 
   /**
@@ -31,7 +31,7 @@ class APIClient {
     options?: Partial<ContentQuery>
   ): Promise<APIResponse<BuilderContentData[]>> {
     try {
-      const url = new URL('https://cdn.builder.io/api/v3/content/' + model);
+      const url = new URL(PUBLIC_BUILDER_CDN_URL + model);
       url.searchParams.set('apiKey', this.builderApiKey);
 
       if (locale) {

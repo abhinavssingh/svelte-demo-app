@@ -11,9 +11,7 @@
   let { data }: PageProps  = $props();
 
   // show unpublished content when in preview mode.
-  const canShowContent = $derived(
-    () => Boolean(data?.content) || isPreviewing(),
-  );
+  const canShowContent = data.content || isPreviewing();
 
   // Use locale from server data or fall back to current language store
   const locale = $derived(data?.locale || $currentLanguage);

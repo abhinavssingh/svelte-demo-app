@@ -13,7 +13,7 @@ if not exist .env.local (
         echo # Builder.io API Key and Space ID
         echo # Get these from: https://builder.io/account/home
         echo VITE_BUILDER_API_KEY=your_api_key_here
-        echo VITE_BUILDER_SPACE_ID=your_space_id_here
+        echo PUBLIC_VITE_BUILDER_SPACE_ID=your_space_id_here
     ) > .env.local
     echo ✅ Created .env.local - UPDATE WITH YOUR API KEYS
 ) else (

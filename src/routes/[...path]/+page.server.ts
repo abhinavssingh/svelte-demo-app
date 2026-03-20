@@ -28,17 +28,6 @@ export const load: PageServerLoad = async ({ url, request, setHeaders }) => {
         }
     });
 
-    // Extract SEO data from the Builder entry - handle both structures
-    const seo = {
-        title: content?.data?.title ?? content?.data?.metatitle ?? '',
-        description: content?.data?.description ?? content?.data?.metadescription ?? '',
-        canonical: url.href,
-        ogTitle: content?.data?.ogTitle ?? content?.data?.ogtitle ?? content?.data?.metatitle ?? '',
-        ogDescription: content?.data?.ogDescription ?? content?.data?.ogdescription ?? content?.data?.metadescription ?? '',
-        ogImage: content?.data?.ogImage ?? content?.data?.ogimage ?? '',
-        ogUrl: content?.data?.ogUrl ?? content?.data?.ogurl ?? url.href
-    };
-
     // CDN caching: 60s TTL + 24h SWR (cache per locale)
     setHeaders({
         'cache-control': `public, s-maxage=60, stale-while-revalidate=86400`,
@@ -47,7 +36,6 @@ export const load: PageServerLoad = async ({ url, request, setHeaders }) => {
 
     return { 
         content: content || null, 
-        seo, 
         locale 
     };
 };

@@ -1,56 +1,71 @@
 <script lang="ts">
   let {
     title,
-    subtitle,
+    description,
     backgroundImage,
     ctaText,
-    ctaLink,
-    height
+    ctaLink
   } = $props();
 </script>
 
-<div
-  class="relative w-full flex items-center justify-center overflow-hidden"
-  style="height: {height || '80vh'};"
->
-  <!-- Background Image -->
-  {#if backgroundImage}
-    <img
-      src={backgroundImage}
-      alt="Hero background"
-      class="absolute inset-0 w-full h-full object-cover"
-    />
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-  {:else}
-    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 to-slate-700"></div>
-  {/if}
-
-  <!-- Content -->
-  <div class="relative z-10 text-center px-4">
-    {#if title}
-      <h1 class="text-5xl md:text-6xl font-bold text-white mb-4">
-        {title}
-      </h1>
-    {/if}
-    {#if subtitle}
-      <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
-        {subtitle}
-      </p>
-    {/if}
-
-    <!-- CTA Button -->
-    {#if ctaText && ctaLink}
+    <div class="relative isolate overflow-hidden bg-gray-900 py-24 sm:py-32">
+        {#if backgroundImage}
+	  <img
+        alt=""
+        src="{backgroundImage}"
+        class="absolute inset-0 -z-10 size-full object-cover object-right md:object-center"
+      />
+	    {/if}
+      <div
+        aria-hidden="true"
+        class="hidden sm:absolute sm:-top-10 sm:right-1/2 sm:-z-10 sm:mr-10 sm:block sm:transform-gpu sm:blur-3xl"
+      >
+        <div
+          style={{
+            clipPath:
+              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+          }}
+          class="aspect-1097/845 w-274.25 bg-linear-to-tr from-[#ff4694] to-[#776fff] opacity-20"
+        >
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="absolute -top-52 left-1/2 -z-10 -translate-x-1/2 transform-gpu blur-3xl sm:-top-112 sm:ml-16 sm:translate-x-0"
+      >
+        <div
+          style={{
+            clipPath:
+              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+          }}
+          class="aspect-1097/845 w-274.25 bg-linear-to-tr from-[#ff4694] to-[#776fff] opacity-20"
+        >
+        </div>
+      </div>
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl lg:mx-0">
+		{#if title}
+          <h2 class="text-5xl font-semibold tracking-tight text-white sm:text-7xl">{title}</h2>
+		  {/if}
+		  {#if description}
+          <p class="mt-8 text-lg font-medium text-pretty text-gray-300 sm:text-xl/8">
+             {@html description}
+          </p>
+		  {/if}
+		  {#if ctaText && ctaLink}
       <a
-        href={ctaLink}
+        href={ctaLink} rel="external"
         class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
       >
         {ctaText}
       </a>
     {/if}
-  </div>
-</div>
+        </div>
+      </div>
+    </div>
 
-<style>
+<style lang="postcss">
+@reference "tailwindcss";
   :global(.hero-component) {
     @apply w-full;
   }

@@ -6,7 +6,7 @@
 
 /* Optional design tokens via Tailwind v4 @theme */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  --font-sans: InterVariable, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
   --color-brand: #2563eb;        /* generates text-brand, bg-brand, border-brand, etc. */
   --radius-card: 0.75rem;
 }

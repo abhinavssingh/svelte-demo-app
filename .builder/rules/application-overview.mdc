@@ -43,7 +43,7 @@ This is a production-ready SvelteKit 2 application fully integrated with Builder
 ## Environment Variables Required
 
 - `PUBLIC_BUILDER_API_KEY` - Builder.io API key
-- `VITE_BUILDER_SPACE_ID` - Builder.io space ID
+- `PUBLIC_VITE_BUILDER_SPACE_ID` - Builder.io space ID
 - Optional: `VITE_BUILDER_ENV_ID` - Environment ID
 
 ## Important Files

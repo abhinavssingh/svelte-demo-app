@@ -40,7 +40,8 @@
   {text}
 </a>
 
-<style>
+<style lang="postcss">
+@reference "tailwindcss";
   a[disabled] {
     @apply cursor-not-allowed opacity-50;
   }

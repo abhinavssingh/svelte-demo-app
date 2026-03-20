@@ -115,7 +115,7 @@ Required environment variables:
 ```env
 PUBLIC_BUILDER_API_KEY=your_api_key
 VITE_BUILDER_API_KEY=your_api_key
-VITE_BUILDER_SPACE_ID=your_space_id
+PUBLIC_VITE_BUILDER_SPACE_ID=your_space_id
 ```
 
 **Rules:**
