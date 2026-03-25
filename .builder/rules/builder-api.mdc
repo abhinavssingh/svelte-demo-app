@@ -1,0 +1,342 @@
+# Builder.io API Endpoints Documentation
+
+## Overview
+
+The `src/routes/api/builder/` directory contains API endpoints that support Builder.io integration. These endpoints expose application data and metadata to the Builder.io CMS, enabling visual editing, component discovery, and content management.
+
+## Folder Structure
+
+```
+src/routes/api/builder/
+└── components/
+    └── +server.ts          # Component registry endpoint
+```
+
+## Purpose
+
+The Builder.io API directory serves two main purposes:
+
+1. **Component Discovery** - Tells Builder.io what components are available in your application
+2. **Component Metadata** - Provides Builder.io with component properties and input configurations
+3. **Visual Editor Integration** - Enables component drag-drop in Builder.io's visual editor
+
+## Endpoints
+
+### GET `/api/builder/components`
+
+**Full Path:** `src/routes/api/builder/components/+server.ts`
+
+**Purpose:** Returns a list of all registered custom components with their metadata
+
+**Request:**
+```
+GET /api/builder/components
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "component": "SvelteComponent",
+      "name": "Hero",
+      "inputs": [
+        {
+          "name": "title",
+          "type": "string",
+          "defaultValue": "Welcome to Our Site"
+        },
+        {
+          "name": "subtitle",
+          "type": "string"
+        },
+        {
+          "name": "backgroundImage",
+          "type": "image"
+        },
+        {
+          "name": "ctaText",
+          "type": "string",
+          "defaultValue": "Get Started"
+        },
+        {
+          "name": "ctaLink",
+          "type": "link"
+        }
+      ]
+    },
+    {
+      "component": "SvelteComponent",
+      "name": "FeatureCard",
+      "inputs": [
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "richText"
+        },
+        {
+          "name": "icon",
+          "type": "image"
+        }
+      ]
+    },
+    {
+      "component": "SvelteComponent",
+      "name": "Header",
+      "inputs": [
+        {
+          "name": "logo",
+          "type": "image"
+        },
+        {
+          "name": "sticky",
+          "type": "boolean",
+          "defaultValue": true
+        }
+      ]
+    },
+    {
+      "component": "SvelteComponent",
+      "name": "Button",
+      "inputs": [
+        {
+          "name": "text",
+          "type": "string",
+          "defaultValue": "Click Me"
+        },
+        {
+          "name": "variant",
+          "type": "string",
+          "defaultValue": "primary"
+        },
+        {
+          "name": "size",
+          "type": "string",
+          "defaultValue": "md"
+        },
+        {
+          "name": "link",
+          "type": "link"
+        }
+      ]
+    }
+  ],
+  "count": 4
+}
+```
+
+**Status Codes:**
+- `200 OK` - Successfully returns components
+- `500 Internal Server Error` - Error fetching components
+
+**Implementation:**
+```typescript
+// src/routes/api/builder/components/+server.ts
+import { json, type RequestHandler } from '@sveltejs/kit';
+import { getComponentsList } from '$lib/builders';
+
+export const GET: RequestHandler = async () => {
+  try {
+    const components = getComponentsList();
+
+    return json({
+      success: true,
+      data: components,
+      count: components.length
+    });
+  } catch (error) {
+    console.error('Error fetching components:', error);
+    return json(
+      {
+        success: false,
+        error: 'Failed to fetch components'
+      },
+      { status: 500 }
+    );
+  }
+};
+```
+
+## How Builder.io Uses These Endpoints
+
+### Visual Editor Initialization
+
+When a user opens the Builder.io visual editor:
+
+1. **Request Components** `GET /api/builder/components`
+2. **Parse Response** Builder.io reads the component metadata
+3. **Build Palette** Creates component palette with all registered components
+4. **Enable Drag-Drop** Users can now drag components onto the canvas
+5. **Show Properties** Component inputs appear in the properties panel
+
+### Component Property UI Generation
+
+Builder.io automatically generates property UIs based on input types:
+
+| Input Type | Editor UI | Example |
+|---|---|---|
+| `string` | Text input | Title, subtitle, text |
+| `number` | Number input | Width, padding, count |
+| `boolean` | Toggle/checkbox | Sticky, visible, underlined |
+| `image` | Image picker | Hero background, icon, logo |
+| `color` | Color picker | Background color, text color |
+| `link` | URL/link picker | CTA link, navigation URLs |
+| `richText` | WYSIWYG editor | Description, body text |
+| `array` | Repeater | List of items, features |
+| `object` | Object editor | Complex data structures |
+
+## Component Registration Flow
+
+```
+You create component
+    ↓
+Register in src/lib/builders/customComponents.ts
+    ↓
+getComponentsList() reads registry
+    ↓
+/api/builder/components endpoint returns metadata
+    ↓
+Builder.io fetches endpoint
+    ↓
+Components appear in Builder.io visual editor
+    ↓
+Content creators drag components to pages
+    ↓
+Pages published with your components
+```
+
+## Adding New API Endpoints
+
+To add more Builder.io API endpoints:
+
+1. **Create New File:**
+   ```
+   src/routes/api/builder/[endpoint]/+server.ts
+   ```
+
+2. **Implement GET/POST Handler:**
+   ```typescript
+   import { json, type RequestHandler } from '@sveltejs/kit';
+
+   export const GET: RequestHandler = async () => {
+     return json({
+       success: true,
+       data: []
+     });
+   };
+   ```
+
+3. **Update Documentation:**
+   - Add endpoint description here
+   - Include request/response examples
+   - Document error handling
+
+**Example: Add a pages endpoint**
+```typescript
+// src/routes/api/builder/pages/+server.ts
+export const GET: RequestHandler = async () => {
+  // Returns list of published pages
+  // ...
+};
+```
+
+## Error Handling
+
+All endpoints should follow this pattern:
+
+```typescript
+export const GET: RequestHandler = async () => {
+  try {
+    const data = await fetchData();
+    return json({
+      success: true,
+      data,
+      count: data.length
+    });
+  } catch (error) {
+    console.error('Fatal error:', error);
+    return json(
+      {
+        success: false,
+        error: error.message || 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+};
+```
+
+## Performance Considerations
+
+1. **Caching** - Cache component list in memory since components rarely change
+2. **Lazy Loading** - Load components on-demand for large applications
+3. **Response Size** - Keep responses under 1MB for fast loading
+4. **Request Rate** - Limit request frequency to prevent abuse
+
+## Security
+
+1. **API Key Validation** - Consider validating Builder.io API keys
+2. **CORS** - Ensure Builder.io domain is allowed
+3. **Rate Limiting** - Implement rate limiting on public endpoints
+4. **Input Validation** - Validate all query parameters
+5. **Error Messages** - Don't expose sensitive errors to clients
+
+## Testing
+
+Test endpoints with curl:
+
+```bash
+# Test components endpoint
+curl http://localhost:3001/api/builder/components | jq
+
+# Pretty print JSON
+curl http://localhost:3001/api/builder/components | jq '.data | length'
+
+# Check specific component
+curl http://localhost:3001/api/builder/components | jq '.data[] | select(.name=="Hero")'
+```
+
+## Debugging
+
+Enable verbose logging:
+
+```typescript
+export const GET: RequestHandler = async () => {
+  try {
+    console.log('=== /api/builder/components called ===');
+    const components = getComponentsList();
+    console.log(`Returning ${components.length} components`);
+    
+    return json({
+      success: true,
+      data: components,
+      count: components.length
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    return json({ success: false }, { status: 500 });
+  }
+};
+```
+
+## Related Files
+
+- **`src/lib/builders/customComponents.ts`** - Component definitions
+- **`src/lib/builders/registry.ts`** - Component registry
+- **`src/lib/builders/index.ts`** - Barrel exports
+- **`src/routes/[lang=locale]/[...path]/+page.svelte`** - Uses components
+- **`builder-integration.mdc`** - Builder.io integration guide
+
+## Future Enhancements
+
+Potential endpoints to add:
+
+1. **GET `/api/builder/pages`** - List published pages
+2. **GET `/api/builder/pages/:id`** - Get specific page content
+3. **POST `/api/builder/preview`** - Preview unpublished changes
+4. **GET `/api/builder/templates`** - List available templates
+5. **GET `/api/builder/styles`** - Return theme configuration

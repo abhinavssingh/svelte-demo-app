@@ -1,6 +1,14 @@
 <script lang="ts">
+	import { currentLanguage } from '$lib/i18n/store';
 	let { data, children } = $props();
 	import '../app.css';
+
+	// Update the language store if locale data is available
+	$effect(() => {
+		if (data?.locale) {
+			currentLanguage.set(data.locale);
+		}
+	});
 </script>
 
 <svelte:head>

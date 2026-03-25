@@ -50,10 +50,15 @@ This is a production-ready SvelteKit 2 application fully integrated with Builder
 
 - **`src/lib/index.ts`** - Central export point for all lib modules
 - **`src/lib/builders/customComponents.ts`** - Where all components are registered for Builder.io
-- **`src/routes/[...path]/+page.svelte`** - Dynamic page rendering with Builder content
+- **`src/routes/[lang=locale]/[...path]/+page.svelte`** - Dynamic page rendering with Builder content
+- **`src/routes/[lang=locale]/[...path]/+page.server.ts`** - Server-side data loading with path normalization
+- **`src/hooks.server.ts`** - Automatic locale redirect and app initialization
+- **`src/lib/i18n/server.ts`** - Server-side locale detection utilities
+- **`src/lib/i18n/path.ts`** - URL path and locale extraction utilities
 - **`src/lib/i18n/store.ts`** - Language/translation configuration
-- **`src/hooks.server.ts`** - App initialization
-- **`AGENTS.md`** - This documentation for AI agents
+- **`src/params/locale.ts`** - Route parameter matcher for valid locales
+- **`src/routes/api/builder/components/+server.ts`** - Component registry API endpoint
+- **`AGENTS.md`** - Complete documentation for AI agents
 
 ## Code Style Guidelines
 

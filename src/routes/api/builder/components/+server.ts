@@ -4,7 +4,7 @@
  */
 
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { getComponentsList } from '$lib/builders/registry';
+import { getComponentsList } from '$lib/builders';
 
 export const GET: RequestHandler = async () => {
   try {

@@ -2,11 +2,13 @@
  * Note: @builder.io/sdk-svelte uses the Content component with customComponents prop
  * Svelte components are registered via customComponents.ts and passed to Content component
  * Localization is handled via the locale prop to resolve localized fields
+ * 
+ * IMPORTANT: Locale-related functions have been moved to $lib/i18n/server.ts
+ * Use those instead of duplicating logic here.
  */
 import { Content } from '@builder.io/sdk-svelte';
 import { CUSTOM_COMPONENTS } from './customComponents';
 import type { BuilderContentData } from '$lib/types';
-import type { SupportedLanguage } from '$lib/types';
 import { PUBLIC_BUILDER_API_KEY, PUBLIC_VITE_BUILDER_SPACE_ID } from '$env/static/public';
 
 // Environment variables
@@ -85,63 +87,6 @@ class BuilderIntegration {
    */
   getCustomComponents() {
     return CUSTOM_COMPONENTS;
-  }
-
-  /**
-   * Get locale from request headers or default to 'en'
-   * Supports: Accept-Language header or locale query parameter
-   * @param headerLanguage - From Accept-Language header
-   * @param queryLocale - From URL query parameter
-   * @returns Supported locale code
-   */
-  getLocaleFromRequest(
-    headerLanguage?: string,
-    queryLocale?: string
-  ): SupportedLanguage {
-    const supportedLocales: SupportedLanguage[] = ['en', 'es', 'fr', 'de', 'it', 'ja', 'zh', 'pt', 'ru', 'ar'];
-
-    // Priority 1: Query parameter
-    if (queryLocale && supportedLocales.includes(queryLocale as SupportedLanguage)) {
-      return queryLocale as SupportedLanguage;
-    }
-
-    // Priority 2: Accept-Language header
-    if (headerLanguage) {
-      const primaryLang = headerLanguage.split('-')[0].toLowerCase();
-      if (supportedLocales.includes(primaryLang as SupportedLanguage)) {
-        return primaryLang as SupportedLanguage;
-      }
-    }
-
-    // Default to English
-    return 'en';
-  }
-
-  /**
-   * Prepare options for Builder.io content fetching with locale support
-   * @param locale - The locale code for localized fields
-   * @param searchParams - URL search parameters
-   * @returns Options object with locale for Builder API
-   */
-  getBuilderOptionsWithLocale(
-    locale: SupportedLanguage,
-    searchParams?: URLSearchParams
-  ) {
-    const options: Record<string, any> = {
-      // Builder.io locale for resolving localized fields
-      locale,
-      // Include draft content in preview mode
-      previewingBuild: true
-    };
-
-    // Add any custom search params
-    if (searchParams) {
-      searchParams.forEach((value, key) => {
-        options[key] = value;
-      });
-    }
-
-    return options;
   }
 }
 

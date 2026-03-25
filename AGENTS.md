@@ -19,35 +19,47 @@ src/
 ├── app.html                      # Main app template
 ├── app.css                       # Global styles with TailwindCSS imports
 ├── app.d.ts                      # TypeScript declarations
-├── hooks.server.ts               # Server-side initialization
+├── hooks.server.ts               # Server-side init + auto-locale redirect
+├── params/
+│   └── locale.ts                 # Route param matcher for valid locales
 ├── routes/
-│   ├── +layout.svelte           # Root layout with SEO
+│   ├── +layout.server.ts        # Global SEO data loading
+│   ├── +layout.svelte           # Root layout with language detection
 │   ├── api/
 │   │   └── builder/
-│   │       └── components/      # Component metadata endpoint
-│   └── [...path]/
-│       ├── +page.server.ts      # Server-side page data loading
-│       └── +page.svelte         # Dynamic page rendering with Builder.io Content
+│   │       └── components/      # GET: Return available components
+│   │           └── +server.ts
+│   └── [lang=locale]/           # Locale-validated route segment
+│       └── [...path]/           # Catch-all path for pages
+│           ├── +page.server.ts  # Load content with path normalization
+│           └── +page.svelte     # Render with Content component
 │
 ├── lib/
 │   ├── builders/
-│   │   ├── customComponents.ts  # Svelte components + metadata for Builder.io
-│   │   └── integration.ts       # Builder.io SDK initialization
+│   │   ├── customComponents.ts  # Svelte components + metadata
+│   │   ├── integration.ts       # Builder.io SDK initialization
+│   │   ├── registry.ts          # Component registry
+│   │   ├── index.ts             # Barrel exports
+│   │   └── builder.server.ts    # Builder.io fetch utilities
 │   ├── api/
 │   │   └── client.ts            # API client with caching
 │   ├── i18n/
-│   │   └── store.ts             # Multilingual support
+│   │   ├── store.ts             # Translations (10 languages)
+│   │   ├── server.ts            # Server locale utilities
+│   │   ├── path.ts              # URL path/locale extraction
+│   │   └── index.ts             # Barrel exports
 │   ├── components/
-│   │   ├── layout/              # Layout components (Header, Button)
-│   │   ├── hero/                # Hero components
-│   │   └── features/            # Feature components
+│   │   ├── layout/              # Header, Button, etc.
+│   │   ├── hero/                # Hero sections
+│   │   └── features/            # Feature cards
 │   ├── types/
-│   │   └── index.ts             # TypeScript types
+│   │   └── index.ts             # TypeScript definitions
 │   └── utils/
 │       └── index.ts             # Utility functions
 │
 .builder/
 └── rules/                       # AI instruction files
+    ├── README.md
     ├── application-overview.mdc
     ├── component-architecture.mdc
     ├── builder-integration.mdc
@@ -83,9 +95,16 @@ Modular, composable components using Svelte 5 runes:
 />
 ```
 
-### Internationalization (i18n)
+### Internationalization with Locale-Prefixed URLs
 
-10 languages with automatic detection:
+10 languages with automatic browser language detection and URL-based routing:
+
+**URL Structure:**
+- `http://localhost:3000/en/` → English home page
+- `http://localhost:3000/es/about` → Spanish about page
+- `http://localhost:3000/` → Auto-redirects to `/en/` or user's browser language
+
+**Using translations:**
 
 ```svelte
 <script>
@@ -95,7 +114,13 @@ Modular, composable components using Svelte 5 runes:
 <h1>{$t('nav.home')}</h1>
 ```
 
-Supported: en, es, fr, de, it, ja, zh, pt, ru, ar
+**Supported Locales:** en, es, fr, de, it, ja, zh, pt, ru, ar
+
+**Key Features:**
+- ✅ Automatic redirect based on Accept-Language header
+- ✅ URL-based locale: `/locale/path` structure
+- ✅ Path normalization for Builder.io queries
+- ✅ RTL support (Arabic)
 
 ## Development Commands
 
@@ -135,12 +160,16 @@ Go to https://builder.io to access your space. Your Svelte components will be av
 ### 4. Create and Edit Pages
 
 1. In Builder.io, click "Add Builder Page"
-2. Give it a URL (e.g., `/about`)
+2. Give it a URL path (e.g., `/about`) - **no locale prefix needed**
 3. Click "Edit" to open visual builder
 4. Drag and drop your custom components
 5. Configure component properties
 6. Publish when ready
-7. Visit `http://localhost:3000/about` to see your published page
+7. Pages auto-available at all locales:
+   - `http://localhost:3000/en/about`
+   - `http://localhost:3000/es/about`
+   - `http://localhost:3000/fr/about`
+   - etc.
 
 ## Component Development
 
@@ -219,20 +248,23 @@ The project is organized for scalability:
 
 ### Key Files
 
-- **`$lib/builders/registry.ts`**: Central component management
+- **`src/hooks.server.ts`**: App initialization, auto-redirect to locale URLs
+- **`src/params/locale.ts`**: Route param matcher for valid locales
+- **`$lib/i18n/server.ts`**: Server locale detection and cache headers
+- **`$lib/i18n/path.ts`**: URL path/locale extraction utilities
+- **`$lib/builders/registry.ts`**: Component registry
+- **`$lib/builders/builder.server.ts`**: Builder.io fetch utilities
 - **`$lib/builders/integration.ts`**: Builder SDK initialization
-- **`$lib/i18n/store.ts`**: Multilingual store and translations
-- **`$lib/api/client.ts`**: Typed API client with caching
-- **`src/hooks.server.ts`**: App initialization and middleware
-- **`src/routes/api/`**: Backend API endpoints
+- **`src/routes/api/builder/`**: Builder.io API endpoints
 
 ### Builder.io Integration Points
 
-1. **Devtools**: `npm init builder.io@latest` enables visual editing
-2. **Component Registry**: Automatic component discovery
-3. **Drag & Drop**: Visual builder places components on pages
-4. **Type System**: Props automatically become Builder inputs
-5. **API Access**: Builder fetches components via `/api/builder/components`
+1. **Auto Redirect**: `src/hooks.server.ts` redirects `/path` → `/locale/path` based on browser language
+2. **Path Normalization**: `src/routes/[lang=locale]/[...path]/+page.server.ts` strips locale before querying Builder
+3. **Component Registry**: `/api/builder/components` endpoint provides metadata
+4. **Component Dragging**: Builder.io visual editor discovers components from registry
+5. **Type System**: Props → Builder inputs (automatic)
+6. **Content Rendering**: `Content` component with `customComponents` prop
 
 ## Best Practices
 
@@ -309,7 +341,38 @@ registerComponent('MyComponent', {
 });
 ```
 
+## API Endpoints
+
+### GET `/api/builder/components`
+
+**Purpose**: Returns available custom components for Builder.io CMS
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "component": "SvelteComponent",
+      "name": "Hero",
+      "inputs": [
+        { "name": "title", "type": "string", "defaultValue": "Title" }
+      ]
+    }
+  ],
+  "count": 4
+}
+```
+
+**Used by**: Builder.io visual editor for component palette discovery
+
 ## Troubleshooting
+
+### Not redirecting to locale URL
+- Ensure `src/hooks.server.ts` is properly imported in `src/app.html`
+- Check `src/params/locale.ts` is valid TypeScript
+- Verify Accept-Language header is sent by browser
+- Clear cache and restart dev server
 
 ### Components not appearing in Builder.io
 - Verify API keys in `.env.local`
@@ -318,15 +381,17 @@ registerComponent('MyComponent', {
 - Clear browser cache and refresh Builder.io editor
 
 ### Content not rendering on published pages
-- Check page slug matches in Builder.io (e.g., `/about`)
+- Check page slug in Builder.io has NO locale prefix (e.g., `/about`, not `/en/about`)
 - Verify `PUBLIC_BUILDER_API_KEY` is set in `.env.local`
 - Ensure page is published in Builder.io
 - Check network tab for API errors in browser console
+- Verify `/` (root) page is published for home page rendering
 
 ### i18n not updating
 - Use `$t()` store function, not direct translation object
 - Subscribe to `$currentLanguage` to trigger reactivity
 - Verify translation keys exist in `store.ts`
+- Check language matches browser's Accept-Language header
 
 ## Resources
 

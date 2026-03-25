@@ -34,12 +34,34 @@ Covers:
 - Initialization flow without devtools
 - Custom components via customComponents.ts
 - Content component rendering with customComponents prop
+- Server-side data loading with locale support
+- **Locale-prefixed URL routing and automatic browser language detection**
+- **Path normalization for Builder.io queries**
 - Page rendering in dynamic routes
 - Environment configuration
+- **Builder.io API endpoints (/api/builder/components)**
 - Page creation workflow
-- Error handling and debugging
+- Debugging and troubleshooting
+- **URL structure with [lang=locale] route parameter**
 
-**Use when**: Working with Builder.io SDK, handling Builder content, debugging integration issues
+**Use when**: Working with Builder.io SDK, handling Builder content, implementing locale routing, debugging integration issues
+
+### [builder-api.mdc](./builder-api.mdc)
+**Purpose**: Documentation of Builder.io API endpoints and component registry
+
+Covers:
+- **Complete folder structure of `src/routes/api/builder/`**
+- **Purpose and design of each endpoint**
+- **GET `/api/builder/components` endpoint documentation**
+- Component metadata and input types
+- How Builder.io uses these endpoints
+- Component registration flow
+- Adding new endpoints
+- Error handling and performance
+- Security considerations
+- Testing and debugging
+
+**Use when**: Working with Builder.io API endpoints, understanding component discovery, adding new APIs, debugging component palette issues
 
 ### [i18n-guidelines.mdc](./i18n-guidelines.mdc)
 **Purpose**: Internationalization implementation and translation management
@@ -97,6 +119,9 @@ Update these rules when:
 
 ### To integrate with Builder:
 → See [builder-integration.mdc](./builder-integration.mdc)
+
+### To understand Builder.io API endpoints:
+→ See [builder-api.mdc](./builder-api.mdc)
 
 ### To add translations:
 → See [i18n-guidelines.mdc](./i18n-guidelines.mdc)

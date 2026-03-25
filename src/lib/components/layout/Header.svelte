@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { currentLanguage, LANGUAGES, availableLanguages } from '$lib/i18n/store';
+  import { currentLanguage, availableLanguages } from '$lib/i18n/store';
 
   interface NavItem {
     label: string;

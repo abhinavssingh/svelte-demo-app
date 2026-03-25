@@ -39,6 +39,12 @@ npm run dev
 
 Open: http://localhost:3000
 
+The app will **auto-redirect** based on your browser language:
+- English browser → `http://localhost:3000/en/`
+- Spanish browser → `http://localhost:3000/es/`
+- French browser → `http://localhost:3000/fr/`
+- etc.
+
 ### 4. Access Builder UI
 
 Click the **Builder logo** in the bottom right corner
@@ -46,11 +52,17 @@ Click the **Builder logo** in the bottom right corner
 ### 5. Create Your First Page
 
 1. Click **"Add Builder Page"**
-2. Give it a name (becomes the URL slug)
+2. Give it a name (becomes the URL slug, e.g., `about`)
 3. Click **"Edit"** to open the visual builder
 4. Drag components from the sidebar
 5. Configure component properties
 6. **Publish** when ready
+
+**Page is automatically available at all locales:**
+- `http://localhost:3000/en/about`
+- `http://localhost:3000/es/about`
+- `http://localhost:3000/fr/about`
+- etc.
 
 ---
 
@@ -71,7 +83,8 @@ Click the **Builder logo** in the bottom right corner
 
 - **AGENTS.md** - Full documentation (start here)
 - **src/lib/builders/customComponents.ts** - Component definitions for Builder.io
-- **src/routes/[...path]/+page.svelte** - Dynamic page rendering
+- **src/routes/[lang=locale]/[...path]/+page.svelte** - Dynamic page rendering
+- **src/hooks.server.ts** - Automatic locale redirect logic
 - **src/lib/i18n/store.ts** - Translations
 - **.builder/rules/** - AI guidelines
 

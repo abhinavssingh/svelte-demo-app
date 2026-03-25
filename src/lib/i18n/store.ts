@@ -203,3 +203,6 @@ export const languageConfig = derived(currentLanguage, ($lang) => {
 
 // Available languages list
 export const availableLanguages = Object.values(LANGUAGES);
+
+// Supported locale codes list (for routing and validation)
+export const SUPPORTED_LOCALES = Object.keys(LANGUAGES) as SupportedLanguage[];

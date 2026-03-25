@@ -1,75 +1,64 @@
 // src/routes/+layout.server.ts
 import type { LayoutServerLoad } from './$types';
 import { makeSeo, type PageSeoFields, type SiteSeoDefaults } from '$lib/seo';
-import { PUBLIC_BUILDER_API_KEY, PUBLIC_BUILDER_CDN_URL } from '$env/static/public';
-import { builderIntegration } from '$lib/builders/integration';
+import { getLocaleFromRequest, getLocaleCacheHeaders } from '$lib/i18n';
+import { getNonLocalizedPath, getLocaleFromPath } from '$lib/i18n/path';
+import { fetchBuilderBatch } from '$lib/builders';
 
-const PUBLIC_KEY = PUBLIC_BUILDER_API_KEY!;
-const CDN = PUBLIC_BUILDER_CDN_URL;
+// Field names with data. prefix for Builder.io API query filtering
+const SEO_FIELDS = [
+  'data.pagetitle',
+  'data.pagedescription',
+  'data.canonicalurl',
+  'data.metatitle',
+  'data.metadescription',
+  'data.ogtitle',
+  'data.ogdescription',
+  'data.ogimage',
+  'data.ogurl',
+  'data.ogtype'
+];
 
-type BuilderEntry<T = any> = { data?: T };
-type BuilderResp<T = any> = { results: BuilderEntry<T>[] };
-
-async function builderGet<T>(
-  model: string,
-  params: Record<string, string | number | boolean> = {}
-) {
-  const qs = new URLSearchParams({ apiKey: PUBLIC_KEY });
-  for (const [k, v] of Object.entries(params)) qs.set(k, String(v));
-  const res = await fetch(`${CDN}/${model}?${qs.toString()}`);
-  if (!res.ok) throw new Error(`Fetch ${model} failed: ${res.status}`);
-  return (await res.json()) as BuilderResp<T>;
-}
-
-export const load: LayoutServerLoad = async ({ url , request}) => {
+export const load: LayoutServerLoad = async ({ url, request, setHeaders }) => {
   const path = url.pathname;
-  const localeParam = url.searchParams.get('locale');
-  const acceptLanguage = request.headers.get('accept-language');
-  const locale = builderIntegration.getLocaleFromRequest(acceptLanguage || undefined, localeParam || undefined);
+  
+  // Extract locale from URL path if present (e.g., /en/about → en, /about)
+  // Otherwise fall back to query param or Accept-Language header
+  const pathLocale = getLocaleFromPath(path);
+  const locale = pathLocale || getLocaleFromRequest(
+    request.headers.get('accept-language') || undefined,
+    url.searchParams.get('locale') || undefined
+  );
 
-  // 1) Pull the current page’s SEO fields directly from the Page model.
-  const pageResp = await builderGet<PageSeoFields & { title?: string; description?: string }>('demo-home-page', {
-    limit: 1,
-    'userAttributes.urlPath': path,
-    // Ask only for the fields we need to keep payload small
-    fields: [
-      'data.pagetitle',
-      'data.pagedescription',
-      'data.canonicalurl',
-      'data.metatitle',
-      'data.metadescription',
-      'data.ogtitle',
-      'data.ogdescription',
-      'data.ogimage',
-      'data.ogurl',
-      'data.ogtype'
-    ].join(','),
-    locale: locale
+  // Get non-localized path for Builder.io queries
+  // e.g., /en/about → /about, /about → /about
+  const builderPath = getNonLocalizedPath(path);
+
+  // Batch fetch page SEO and global settings in parallel
+  const { pageSeo, siteSeo } = await fetchBuilderBatch({
+    pageSeo: {
+      model: 'demo-home-page',
+      urlPath: builderPath,
+      locale,
+      fields: SEO_FIELDS 
+    },
+    siteSeo: {
+      model: 'svelte-global-settings',
+      locale,
+      fields: SEO_FIELDS 
+    }
   });
 
-  const pageData = pageResp.results[0]?.data || {};
+  const pageData = (pageSeo as PageSeoFields & { title?: string; description?: string }) || {};
+  const siteDefaults = (siteSeo as SiteSeoDefaults) || {};
 
-  // 2) (Optional) Fetch global defaults from a Data Model to avoid empty OG when authors forget.
-  const siteSeoResp = await builderGet<SiteSeoDefaults>('svelte-global-settings', {
-    limit: 1,
-    fields: [
-      'data.sitename',
-      'data.pagetitle',
-      'data.pagedescription',
-      'data.canonicalurl',
-      'data.metatitle',
-      'data.metadescription',
-      'data.ogtitle',
-      'data.ogdescription',
-      'data.ogimage',
-      'data.ogurl',
-      'data.ogtype'
-    ].join(','),
-    locale: locale
-  });
-  const siteDefaults = siteSeoResp.results[0]?.data || {};
+  // Build final SEO with fallbacks
+  const seo = makeSeo(builderPath, pageData, siteDefaults, url.origin);
 
-  // 3) Build final SEO
-  const seo = makeSeo(path, pageData, siteDefaults, url.origin);
-  return { seo };
+  // Set cache headers at layout level (applies to all routes)
+  // NOTE: Only call setHeaders() once per request in SvelteKit - do not duplicate in child pages
+  // Strategy: Cache 60s CDN + 24h stale-while-revalidate, with Vary header for locale
+  setHeaders(getLocaleCacheHeaders());
+
+  return { seo, locale };
 };
