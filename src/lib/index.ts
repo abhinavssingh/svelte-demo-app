@@ -11,9 +11,3 @@ export { default as apiClient, type APIResponse } from './api/client';
 // Export types
 export type * from './types/index';
 
-// Export components
-export { default as Hero } from './components/hero/Hero.svelte';
-export { default as FeatureCard } from './components/features/FeatureCard.svelte';
-export { default as Header } from './components/layout/Header.svelte';
-export { default as Button } from './components/layout/Button.svelte';
-export { default as card } from './components/features/Card.svelte'

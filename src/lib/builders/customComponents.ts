@@ -3,11 +3,7 @@
  * Export components as an array to pass to the Content component
  */
 
-import Hero from '$lib/components/hero/Hero.svelte';
-import FeatureCard from '$lib/components/features/FeatureCard.svelte';
-import Header from '$lib/components/layout/Header.svelte';
-import Button from '$lib/components/layout/Button.svelte';
-import Card from '$lib/components/features/Card.svelte';
+import { Hero, FeatureCard, Header, Button, Card } from '$lib/components/';
 
 export const CUSTOM_COMPONENTS = [
 	{
@@ -28,14 +24,26 @@ export const CUSTOM_COMPONENTS = [
 		canHaveChildren: true,
 		inputs: [
 			{ name: 'title', type: 'string', defaultValue: 'Feature Title' },
-			{ name: 'description', type: 'richText', defaultValue: 'Feature description' },
-			{ name: 'cards', type: 'uiBlocks', max: 6, defaultValue: [] }
+			{ name: 'description', type: 'richText', defaultValue: 'Feature description' }
+		],
+		slots: [
+			{
+				name: 'children',
+				helper: {
+					text: 'Add Card components here on a 3-column grid (max 6 cards)',
+					query: {
+						'@type': '@builder.io/sdk:Element',
+						component: {
+							name: { $eq: 'Card' }
+						}
+					}
+				}
+			}
 		],
 		shouldReceiveBuilderProps: {
 			builderBlock: true,
 			builderContext: true,
-			builderComponents: true,
-			builderLinkComponent: true
+			builderComponents: true
 		}
 	},
 	{
@@ -46,7 +54,10 @@ export const CUSTOM_COMPONENTS = [
 			{ name: 'description', type: 'richText', defaultValue: 'Card description' },
 			{ name: 'image', type: 'image' },
 			{ name: 'link', type: 'link' }
-		]
+		],
+		shouldReceiveBuilderProps: {
+			builderBlock: true
+		}
 	},
 	{
 		component: Header,

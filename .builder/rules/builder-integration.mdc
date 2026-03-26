@@ -21,10 +21,7 @@ The app initializes Builder.io in this sequence:
 All components for Builder.io are defined and exported here:
 
 ```typescript
-import Hero from '$lib/components/hero/Hero.svelte';
-import FeatureCard from '$lib/components/features/FeatureCard.svelte';
-import Header from '$lib/components/layout/Header.svelte';
-import Button from '$lib/components/layout/Button.svelte';
+import { Hero, FeatureCard, Header, Button } from '$lib/components';
 
 export const CUSTOM_COMPONENTS = [
   {
